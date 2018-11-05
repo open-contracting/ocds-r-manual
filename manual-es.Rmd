@@ -471,21 +471,39 @@ usando JSON streams y procesamiento paralelo.
 
 ## De una API REST
 
-El dataset de open contracting de Uruguay se encuentra disponible a través de un endpoint RSS, el cual incluye las URL de las últimas entregas. Cabe mencionar que, como se disponibilizan solo las entregas más recientes, no es posible realizar mucho análisis a profundidad basado en este dataset. Aún así, es un ejemplo apropiado para mostrar las funcionalidades de cliente HTTP de R; empezamos obteniendo el feed RSS y creando un dataframe donde cada fila corresponde a una entrega.
+El dataset de open contracting de Uruguay se encuentra disponible a través de un endpoint RSS, el cual provee datos desde enero del 2018 en adelante. Cabe mencionar que, como el conjunto de datos disponible a la fecha de publicación del presente manual no es lo suficientemente grande, un análisis en profundidad de este dataset no es posible. Aún así, es un ejemplo apropiado para mostrar las funcionalidades de cliente HTTP de R. En el siguiente ejercicio, recuperaremos las URLs de los releases de los últimos 3 meses.
 
 
 ```{r}
 library(XML)
+library(dplyr)
 
-xml_url <- "http://www.comprasestatales.gub.uy/ocds/rss"
-xml_file <- xmlParse(xml_url)
-xml_top <- xmlRoot(xml_file)[[1]]
+# usamos el primer dia del mes para evitar posibles errores al calcular el rango de meses
+firstDayOfCurrentMonth <- as.Date(format(Sys.Date(), "%Y-%m-01")) 
+date_range = seq(firstDayOfCurrentMonth, length=3, by="-1 month")
 
-index_tb <- as_tibble(xmlToDataFrame(xmlElementsByTagName(xml_top, "item")))
+fetch_data <- function(d){
+  xml_url <- paste("http://www.comprasestatales.gub.uy/ocds/rss",
+                   format(d, "%Y"), 
+                   format(d, '%m'),
+                   sep = "/")
+  xml_file <- xmlParse(xml_url)
+  xml_top <- xmlRoot(xml_file)[[1]]
+  
+  return(as_tibble(xmlToDataFrame(xmlElementsByTagName(xml_top, "item"),
+                                  stringsAsFactors=FALSE)))
+}
+
+xml_data_bymonth = lapply(date_range, fetch_data)
+index_tb = bind_rows(xml_data_bymonth)
 index_tb
 ```
 
-En el fragmento anterior, empezamos importando la librería *XML* de R debido a que las respuestas de la API de Uruguay se encuentran en este formato. El método *xmlParse* obtiene el contenido del feed RSS y lo parsea, retornando un array anidado que representa un árbol. Procedemos entonces a obtener la raíz de este árbol y buscar cada elemento con la etiqueta *item* usando el método *xmlElementsByTagName*. Convertimos el resultado a un dataframe y posteriormente a un tibble usando *xmlToDataFrame* y *as_tibble respectivamente.
+En el fragmento anterior, empezamos importando la librería *XML* de R debido a que las respuestas de la API de Uruguay se encuentran en este formato. Ya que la API recibe mes y año como parámetros, calculamos una secuencia de fechas para representar los tres últimos meses y construimos una función para iterar a través de las fechas usando la función *lapply*.
+
+Dentro de la función de iteración, el método *xmlParse* obtiene el contenido del feed RSS y lo parsea, retornando un array anidado que representa un árbol. Procedemos entonces a obtener la raíz de este árbol y buscar cada elemento con la etiqueta *item* usando el método *xmlElementsByTagName*. Convertimos el resultado a un dataframe y posteriormente a un tibble usando *xmlToDataFrame* y *as_tibble* respectivamente.
+
+La función *lapply* retorna una lista de tibbles. Para unir los tibbles en uno solo, usamos la función *bind_rows* de la librería *dplyr*.
 
 Procedemos luego a obtener el documento JSON correspondiente a cada entrega, usando los valores de la columna **link** del tibble definido con anterioridad. Existen muchas librerías para manejar documentos JSON con R, cada una con sus ventajas y desventajas; debido a su énfasis en el rendimiento y consumición de APIs web, en esta guía usamos [jsonlite](https://cran.r-project.org/web/packages/jsonlite/index.html).
 
@@ -499,21 +517,21 @@ library(jsonlite)
 releases <- apply(index_tb["link"], 1, function(r) {
   return(as_tibble(fromJSON(r, flatten = TRUE)[["releases"]]))
 })
-releases[[1]]
+releases[[1]] 
 ```
 
 
 La principal función del fragmento de código anterior es *fromJSON*, la cual es proveida por *jsonlite*. 
 La utilizamos para obtener los documentos JSON a partir de la url contenida en la columna *link* de *index_tb*. La bandera flatten indica que queremos que la función aplane lo más posible la estructura de los JSON anidados, dejándolos en un formato más apropiado para su representación tabular. Repetimos este proceso por cada file del tibble usando la función *apply*, la cual ejecuta la función que recibe como parámetro por cada file y retorna una lista como resultado.
 
-En este punto tenemos una lista de tibbles, cada uno representando una entrega. El siguiente paso es unir estos tibbles, rellenando los valores faltantes (por ejemplo, de acuerdo a la etapa a la que corresponden, algunas entregas contienen información de licitación mientras otras no) con NA (la constante de R que simboliza 'no disponible'). Podemos lograr esto usando la función *bind_rows*.
+En este punto tenemos una lista de tibbles, cada uno representando una entrega. El siguiente paso es unir estos tibbles, rellenando los valores faltantes (por ejemplo, de acuerdo a la etapa a la que corresponden, algunas entregas contienen información de licitación mientras otras no) con NA (la constante de R que simboliza 'no disponible'). Podemos lograr esto usando la función *bind_rows* otra vez.
 
 
 ```{r, cache=TRUE}
-releases_tb <- bind_rows(releases)
+releases_tb <- bind_rows(releases) 
 ```
 
-Debido a que los datos de Uruguay incluyen solo las últimas 500 entregas, la compilación de estas entregas para formar registros no es posible (no hay suficientes datos). Por este motivo, este fue el último uso de los datos uruguayos en esta guía.
+Como se ha mencionado anteriormente, este dataset no es lo suficientemente grande aún para un análisis detallado; por lo tanto, este fue el último uso de los datos uruguayos en esta guía. Sin embargo, el ejercicio anterior puede ser fácilmente modificado para realizar un análisis en el futuro.
 
 
 ## A partir de archivos JSON
@@ -616,8 +634,8 @@ library(RPostgreSQL)
 db_engine <- "PostgreSQL"
 host <- "localhost"
 user <- "postgres" # si te preocupa la seguridad
-password <- "" # deberías cambiar estas 2 líneas
-port <- 5433
+password <- "postgres" # deberías cambiar estas 2 líneas
+port <- 5432
 query <- "SELECT id, data FROM data"
 
 drv <- dbDriver(db_engine)
@@ -793,7 +811,7 @@ Supongamos que necesitamos una columna con el *nombre*  del mes en el cual se pu
 
 uruguay_releases_with_month = releases_tb %>% mutate(month = month.name[month(date)])
 ## month.name es un vector con el nombre de cada mes
-uruguay_releases_with_month[c('ocid', 'month')]
+uruguay_releases_with_month[c('ocid', 'month')] 
 ```
 
 *Mutate* recibe un tibble como primer parámetro; recibe una expresión de asignación de variable como segundo parámetro, la cual se evalúa fila por fila de modo a producir la nueva columna.
@@ -826,7 +844,7 @@ awards_tb
 ```
 
 ```{r}
-awards_tb[10, ]$tag
+awards_tb[1, ]$tag
 ```
 
 *Filter* recibe un tibble como primer parámetro y una expresión booleana como el segundo, la expresión booleana se evalúa para cada fila y solo las filas que resultan en *TRUE* se incluyen en el resultado final.

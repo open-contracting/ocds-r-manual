@@ -453,20 +453,38 @@ This section is focused on data loading from diverse sources, which is the first
 
 ## From a REST API
 
-The open contracting dataset from Uruguay is available via a RSS endpoint, which includes URLs to the latest releases. It is worth noting that since only latest releases are accessible, not much in depth analysis can be done using this dataset. Having said that, it is still a perfectly suitable example to showcase R's HTTP fetching capabilities; we start by fetching the RSS feed and creating a data frame where each row corresponds to a release.
+The open contracting dataset from Uruguay is available via a RSS endpoint, which includes URLs to the releases from January 2018 onwards. It is worth noting that since there is not too much data available by the date of publication of the present manual, a deep analysis of Uruguay's contracting data is not possible yet. Having said that, it is still a perfectly suitable example to showcase R's HTTP fetching capabilities. In the following exercise, we will fetch the URLs for the releases of the three latest months.
 
 ```{r}
 library(XML)
+library(dplyr)
 
-xml_url <- "http://www.comprasestatales.gub.uy/ocds/rss"
-xml_file <- xmlParse(xml_url)
-xml_top <- xmlRoot(xml_file)[[1]]
+# we use the first day of the month to avoid possible range calculation errors
+firstDayOfCurrentMonth <- as.Date(format(Sys.Date(), "%Y-%m-01"))
+date_range = seq(firstDayOfCurrentMonth, length=3, by="-1 month")
 
-index_tb <- as_tibble(xmlToDataFrame(xmlElementsByTagName(xml_top, "item")))
+fetch_data <- function(d){
+  xml_url <- paste("http://www.comprasestatales.gub.uy/ocds/rss",
+                   format(d, "%Y"), 
+                   format(d, '%m'),
+                   sep = "/")
+  xml_file <- xmlParse(xml_url)
+  xml_top <- xmlRoot(xml_file)[[1]]
+  
+  return(as_tibble(xmlToDataFrame(xmlElementsByTagName(xml_top, "item"),
+                                  stringsAsFactors=FALSE)))
+}
+
+xml_data_bymonth = lapply(date_range, fetch_data)
+index_tb = bind_rows(xml_data_bymonth)
 index_tb
 ```
 
-In the snippet above, we start by importing R's *XML* library since Uruguay's API responses are in this data format. The *xmlParse* method fetches the content given by the RSS feed url and parses it, returning a tree-like nested array. We then get the root of the parsed structure and seek every element with the *item* tag by calling the *xmlElementsByTagName* method. We convert the result to a data frame and after that to a tibble using *xmlToDataFrame* and *as_tibble* respectively.
+In the snippet above, we start by importing R's *XML* library since Uruguay's API responses are in this data format. Since the API receives year and month as parameters, we calculate a sequence of dates representing the three previous months, and build a function to iterate through the months using the *lapply* function.
+
+Inside the iteration function, the *xmlParse* method fetches the content given by the RSS feed url and parses it, returning a tree-like nested array. We then get the root of the parsed structure and seek every element with the *item* tag by calling the *xmlElementsByTagName* method. We convert the result to a data frame and after that to a tibble using *xmlToDataFrame* and *as_tibble* respectively.
+
+The *lapply* function returns a list of the tibbles. To merge them into a single one, we use the function *bind_rows* from the *dplyr* library.
 
 We then proceed to fetch the JSON content corresponding to each release, using the values of the **link** column defined above. There are many libraries to handle JSON with R, each with its list of pros and cons; because of its focus in performance and web api consumption, we use [jsonlite](https://cran.r-project.org/web/packages/jsonlite/index.html) in this guide.
 
@@ -485,14 +503,13 @@ releases[[1]]
 
 The main function in the snippet above is *fromJSON*, which is provided by *jsonlite*. We use it to fetch the JSON files from the url contained in the *link* column of *index_tb*. The flatten flag indicates that we want the function to squeeze the nested JSON structure as much as possible, to make it suitable for a tabular format. We repeat the process for each row of the tibble using the *apply* function, which applies the function it receives as a parameter to each row and returns the values as a list.
 
-
-At this point we have a list of tibbles, each tibble representing a release. As our next step, we can merge all those tibbles, filling missing values (for example, according to the stage they correspond to, some releases include tender information while some do not) with NA (R's constant for 'Not Available'). Merging severel tibbles row wise is achieved by calling the *bind_rows* function.
+At this point we have a list of tibbles, each tibble representing a release. As our next step, we can merge all those tibbles, filling missing values (for example, according to the stage they correspond to, some releases include tender information while some do not) with NA (R's constant for 'Not Available'). We merge the tibbles by using the *bind_rows* function again.
 
 ```{r, cache=TRUE}
 releases_tb <- bind_rows(releases)
 ```
 
-Because data from Uruguay includes only the latest 500 releases, actual compilation of records is not possible (as not enough data is available). Therefore, this is as far as we will go with their open contracting data.
+As said before, the data available from Uruguay is not big enough yet to make a meaningful analysis, therefore this is as far as we will go with their open contracting data. Nonetheless, the previous exercise can be easily modified to retrieve all the available data from the RSS endpoint to analyze the data in the future.
 
 
 ## From JSON files
@@ -593,8 +610,8 @@ library(RPostgreSQL)
 db_engine <- "PostgreSQL"
 host <- "localhost"
 user <- "postgres" # if you are concerned about security
-password <- "" # you should probably change this 2 lines
-port <- 5433 # set the port of your Postgres instance, default is 5432
+password <- "postgres" # you should probably change this 2 lines
+port <- 5432 # set the port of your Postgres instance, default is 5432
 query <- "SELECT id, data FROM data"
 
 drv <- dbDriver(db_engine)
@@ -766,7 +783,7 @@ releases_tb
 Let's suppose we need a column with the *name* of the month when a release was made. This value is not readily available in the dataset, but the information is contained in the *date* column and can be extracted with some help from **mutate**:
 
 ```{r}
-
+ 
 uruguay_releases_with_month = releases_tb %>% mutate(month = month.name[month(date)])
 ## month.name is a vector with the name of each month
 uruguay_releases_with_month[c('ocid', 'month')]
@@ -800,7 +817,7 @@ awards_tb
 ```
 
 ```{r}
-awards_tb[10, ]$tag
+awards_tb[1, ]$tag
 ```
 
 *Filter* receives a tibble as its first parameter and a boolean expression as the second one, the boolean expression is evaluated for each row and only rows wich evaluate to *TRUE* are included in the final result.
