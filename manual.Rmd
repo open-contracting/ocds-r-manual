@@ -453,7 +453,7 @@ This section is focused on data loading from diverse sources, which is the first
 
 ## From a REST API
 
-The open contracting dataset from Uruguay is available via a RSS endpoint, which includes URLs to the releases from January 2018 onwards. It is worth noting that since there is not too much data available by the date of publication of the present manual, a deep analysis of Uruguay's contracting data is not possible yet. Having said that, it is still a perfectly suitable example to showcase R's HTTP fetching capabilities. In the following exercise, we will fetch the URLs for the releases of the three latest months.
+The open contracting dataset from Uruguay is available via a RSS endpoint, which includes URLs to the releases from December 2017 onwards. It is worth noting that since there is not too much data available by the date of publication of the present manual, a deep analysis of Uruguay's contracting data is not possible yet. Having said that, it is still a perfectly suitable example to showcase R's HTTP fetching capabilities. In the following exercise, we will fetch the URLs for the releases of the three latest months.
 
 ```{r}
 library(XML)
