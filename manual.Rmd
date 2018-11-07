@@ -37,7 +37,7 @@ caption {
 
 The goal of this manual is to provide the basic foundations needed to analyze and visualize Open Contracting data using the R programming language to people that might be interested in pursuing this challenging but worthy endeavor. A basic understanding of computer programming will come in handy when reading this document; however, enough guidance is provided to ensure that less-tech-savy readers can also follow along.
 
-As a part of this guide, we acquire, clean, analyze and plot Open Contracting data from 4 members of the partnership: Paraguay, Mexico, Uruguay and Colombia. This document was written using [R Notebooks](https://rmarkdown.rstudio.com/r_notebooks), a nifty feature which allows convenient integration of Markdown and R code, and exporting to HTML and PDF. The source code of this project is available [here](https://https://github.com/rparrapy/ocds-r-manual).   
+As a part of this guide, we acquire, clean, analyze and plot Open Contracting data from 4 members of the partnership: Paraguay, Mexico, Uruguay and Colombia. This document was written using [R Notebooks](https://rmarkdown.rstudio.com/r_notebooks), a nifty feature which allows convenient integration of Markdown and R code, and exporting to HTML and PDF. The source code of this project is available [here](https://github.com/open-contracting/ocds-r-manual).   
 
 
 The rest of this document is organized as follows:
@@ -430,7 +430,7 @@ The project this document is generated from uses [Packrat](https://rstudio.githu
 
 1. Cloning the project
 ```{bash, eval=FALSE}
-git clone https://github.com/rparrapy/ocds-r-manual.git
+git clone https://github.com/open-contracting/ocds-r-manual.git
 ```
 2. Opening it with RStudio by using the menu bar option **File -> Open Project...**
 
