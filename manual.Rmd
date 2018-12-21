@@ -35,16 +35,16 @@ caption {
 \newpage
 # Introduction
 
-The goal of this manual is to provide the basic foundations needed to analyze and visualize Open Contracting data using the R programming language to people that might be interested in pursuing this challenging but worthy endeavor. A basic understanding of computer programming will come in handy when reading this document; however, enough guidance is provided to ensure that less-tech-savy readers can also follow along.
+The goal of this manual is to provide the basic foundations needed to analyze and visualize Open Contracting data using the R programming language to people that might be interested in pursuing this challenging but worthy endeavor. A basic understanding of computer programming will come in handy when reading this document; however, enough guidance is provided to ensure that less-tech-savvy readers can also follow along.
 
-As a part of this guide, we acquire, clean, analyze and plot Open Contracting data from 4 members of the partnership: Paraguay, Mexico, Uruguay and Colombia. This document was written using [R Notebooks](https://rmarkdown.rstudio.com/r_notebooks), a nifty feature which allows convenient integration of Markdown and R code, and exporting to HTML and PDF. The source code of this project is available [here](https://github.com/open-contracting/ocds-r-manual).   
+As a part of this guide, we fetch, clean, analyze and plot samples of Open Contracting data from 4 members of the partnership: Paraguay, Mexico, Uruguay and Colombia. This document was written using [R Notebooks](https://rmarkdown.rstudio.com/r_notebooks), a nifty feature which allows convenient integration of Markdown and R code, and exporting to HTML and PDF. The source code of this project is available [here](https://github.com/open-contracting/ocds-r-manual).   
 
 
 The rest of this document is organized as follows:
 
   * The remainder of this section introduces the Open Contracting Data Standard, briefly describing its main building blocks, and the R programming language, covering its core features and how to install it.
   
-  * Section 2 deals with data acquisition and cleaning, focusing on reading and processing JSON files with R.
+  * Section 2 deals with data acquisition and cleaning, focusing on reading and processing JSON with R.
   
   * Section 3 presents the [Tidyverse](https://www.tidyverse.org), a collection of R packages designed to perform common data science tasks. 
   
@@ -273,7 +273,7 @@ R.version
 ```
   
 
-[^1]: The author recommends RStudio as the go-to way to run R code and believes it is one major reason behind R's spike in popularity. Consequently, this guide was written using RStudio v1.1.453 in macOS High Sierra.
+[^1]: The author recommends RStudio as the go-to way to run R code and believes it is one major reason behind R's spike in popularity. Consequently, this guide was originally written using RStudio v1.1.453 in macOS High Sierra.
 
 ### Operators
 
@@ -403,7 +403,11 @@ As a final remark, although there is no official code style guideline for the R 
  
 ## Installing R and other dependencies
 
-Assuming a machine using Ubuntu 18.04 Bionic Beaver as its operating system, a user with *sudo* access can install the R programming language and R Studio by following these steps:
+Both R and RStudio are available for most of the popular operating systems, including Windows, MacOS and several Linux distributions. Since it is not possible to show instructions for each possible system in here, in this section we will show instructions for Windows and Ubuntu 18.04 Bionic Beaver. Users of other operating systems can find instructions in the official sites for [R](https://www.r-project.org/) and [RStudio](https://www.rstudio.com/products/rstudio/).
+
+Installing R and RStudio on Windows is pretty straightforward: download the installers from [here](https://cloud.r-project.org/bin/windows/base/) and [here](https://www.rstudio.com/products/rstudio/) and run them. Just remember that you have to install R first.
+
+For Ubuntu 18.04 Bionic Beaver there are more steps involved:
 
 1. Update system packages to make sure already installed dependencies are up to date.
 ```{bash, eval=FALSE}
@@ -422,34 +426,45 @@ sudo apt install gdebi-core
 ```{bash, eval=FALSE}
 sudo gdebi rstudio-xenial-1.1.456-amd64.deb
 ```
-6. Profit! You should now be able to access Rstudio by running the *rstudio* command or by clicking its icon in the apps menu.
+Profit! You should now be able to access Rstudio by running the *rstudio* command or by clicking its icon in the apps menu.
 
 Besides RStudio Desktop, which can be installed by following the previous set of steps, RStudio is also available in a remote access flavor. RStudio Server is an application that can be installed in a web server, thus offering the same features of the desktop version through a web browser. To find out more about this alternative and how to install it, please refer to the [official documentation](https://www.rstudio.com/products/rstudio/download-server/).
 
-The project this document is generated from uses [Packrat](https://rstudio.github.io/packrat/) to keep track of all the libraries that it depends on. This ensures the portability of the software (on import, the appropriate version for the corresponding OS will be installed) and the reproducibility of the analysis. Therefore, assuming you have Git installed, playing around with this notebook should be as easy as:
+The project this document is generated from uses [Packrat](https://rstudio.github.io/packrat/) to keep track of all the libraries that it depends on. This ensures the portability of the software (on import, the appropriate version for the corresponding OS will be installed) and the reproducibility of the analysis. Therefore, playing around with this notebook should be as easy as:
 
-1. Cloning the project
+1. Download the notebook in ZIP format from [here](https://github.com/open-contracting/ocds-r-manual/archive/master.zip) and unzip it in a preferred location, or if you prefer to do so, use Git to clone the project:
 ```{bash, eval=FALSE}
 git clone https://github.com/open-contracting/ocds-r-manual.git
 ```
-2. Opening it with RStudio by using the menu bar option **File -> Open Project...**
+If you are working on Ubuntu 18.04, install the following libraries:
+```{bash notebooklibs, eval=FALSE}
+sudo apt-get install libxml2-dev curl libcurl4-openssl-dev libssl-dev libpq-dev g++
+```
+2. Open RStudio and look for the project file using the menu bar option **File -> Open Project...**
 
-
-We will also be using a Postgres database to run our analysis, hence we need to install Postgres in case it is missing in our system. We can do so by running:
+We will also be using a Postgres database to run our analysis, hence we need to install Postgres in case it is missing in our system. On Ubuntu 18.04, we can do so by running:
 
 ```{bash, eval=FALSE}
 sudo apt install postgresql postgresql-contrib
 ```
 
-The last command install the Postgres database engine and creates a *postgres* user as a default account to access our databases.
+The previous command install the Postgres database engine and creates a *postgres* user as a default account to access our databases.
+
+For Windows, you can download the installer from the [official website](https://www.postgresql.org/download/windows/). The installer is shipped with pgAdmin, an useful graphic tool to manage databases.
 
 # Data acquisition
 
-This section is focused on data loading from diverse sources, which is the first step for any analysis process. We will read the data from the four countries this document is concerned with, using them as examples for different data acquisition methods:
+This section is focused on data loading from diverse sources, which is the first step for any analysis process. We will read data from the four countries this document is concerned with, using them as examples for different data acquisition methods:
 
 * Data from Uruguay will be read using their public web API.
 * Data from Paraguay and Mexico will be loaded from local JSON files.
 * Data from Colombia will be loaded from JSONB columns of a Postgres database. Since this is the largest dataset we have access to, we will use it as an example of how to handle big data with R using JSON streams.
+
+For Paraguay, Mexico and Colombia sources we are going to use samples prepared for the purpose of this manual. It is worth noting that these samples may not be updated, therefore if you are interested in conducting an analysis of data from these countries you should go to the official publishers:
+
+* Paraguay: [DNCP](https://www.contrataciones.gov.py/datos/api/v2/#!/ocds) and [Ministry of Finance](https://datos.hacienda.gov.py/odmh-api-v1/api-docs/)
+* Mexico: [Public Federal Administration](https://datos.gob.mx/busca/dataset/concentrado-de-contrataciones-abiertas-de-la-apf)
+* Colombia: [Colombia Compra Eficiente](https://www.colombiacompra.gov.co/transparencia/gestion-documental/datos-abiertos)
 
 ## From a REST API
 
@@ -514,7 +529,7 @@ As said before, the data available from Uruguay is not big enough yet to make a 
 
 ## From JSON files
 
-We can also read records or releases from a set of JSON files, published by one or more official publishers associated to a country. That is the case of Paraguay, the next country we will be adding to our analysis. Paraguayan open contracting data are published by the National Directorate of Public Tender (*Dirección Nacional de Contrataciones Públicas*, DNCP) and the Ministry of Finance (*Ministerio de Hacienda*); as they share ocids, we should be able to use their published data together.
+We can also read records or releases from a set of JSON files, published by one or more official publishers associated to a country. That is the case of Paraguay, the next country we will be adding to our analysis. As we said before, Paraguayan open contracting data are published by the National Directorate of Public Tender (*Dirección Nacional de Contrataciones Públicas*, DNCP) and the Ministry of Finance (*Ministerio de Hacienda*); as they share ocids, we should be able to use their published data together.
 
 To continue with this guide, you should now download a copy of these datasets to your local machine, and store them under the *./data* directory (which should be empty if you just cloned this project). That is:
 
@@ -598,9 +613,13 @@ To continue with this guide, you should now download the backup files of these d
 
 1. Again, head over to [https://mega.nz/#F!PCQFzAyY!m54DS0hA3pyKXqergJUBFQ](https://mega.nz/#F!PCQFzAyY!m54DS0hA3pyKXqergJUBFQ).
 2. Download the files *ocds_colombia.dump* and *ocds_mexico.dump* to your local hard drive.
-3. Create the databases by running *sudo -u postgres createdb ocds_colombia* and *sudo -u postgres createdb ocds_mexico* from a terminal session.  
-3. Within a terminal session, from the directory where you downloaded the files, run *pg_restore -d ocds_colombia ocds_colombia_dump* and *pg_restore -d ocds_mexico ocds_mexico.dump*.
-4. Check the databases you just created, they should have several tables which were created by the restore process. In particular, the *data* table should contain multiple records that we will read for our analysis.
+3. Create the databases:
+  + On Windows, look for pgAdmin in the Start menu and open it. Go to the left panel, click "Servers", then click on the icon of your local PostgreSQL instance. You should see a "Databases" section, right click it and select the option "Create"-> "Database...". On the dialog, name the database as "ocds_colombia" and then click "Save". Repeat to create another database named "ocds_mexico".
+  + On Ubuntu 18.04, run `sudo -u postgres createdb ocds_colombia` and `sudo -u postgres createdb ocds_mexico` from a terminal session.
+4. Restore the databases: 
+  + On Windows, right click on the ocds_colombia database and select the option "Restore...". Use the "Filename" field to find the backup file for Colombia and click on "Restore". Do the same to restore the database ocds_mexico.
+  + On Ubuntu 18.04, within a terminal session, from the directory where you downloaded the files, run `pg_restore -d ocds_colombia ocds_colombia.dump` and `pg_restore -d ocds_mexico ocds_mexico.dump`.
+5. Check the databases you just created, they should have several tables which were created by the restore process. In particular, the `data` table should contain multiple records that we will read for our analysis.
 
 The library we are using (jsonlite) includes the *stream_in* function to support [ndjson](http://ndjson.org) a convenient format to store multiple JSON records in a single file. Since our records are stored in a Postgres database, we have to write a similar feature ourselves. Let's write a function to do precisely that in the next code snippets:
 

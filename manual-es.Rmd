@@ -44,7 +44,7 @@ El resto de este documento está organizado de la siguiente manera:
 
 * El resto de esta sección introduce el estándar de datos Open Contracting, describiendo brevemente sus principales elementos, y el lenguaje de programación R, cubriendo sus funcionalidades más importantes y como instalarlo.
 
-*  La sección 2 trata de la adquisición y limpieza de datos, haciendo énfasis en la lectura y procesamiento de archivos en formato JSON con R.
+* La sección 2 trata de la adquisición y limpieza de datos, haciendo énfasis en la lectura y procesamiento de datos en formato JSON con R.
 
 * La sección 3 presenta el [Tidyverse](https://www.tidyverse.org), una colección de paquetes de R diseñados para realizar tareas de ciencia de datos.
   
@@ -280,7 +280,7 @@ R.version
 ```
   
 
-[^1]: El autor recomienda RStudio como la manera más conveniente de ejecutar código R y cree que este IDE es una de las principales razones tras la popularidad de R. En consecuencia, esta guía fue escrita usando RStudio v1.1.453 en macOS High Sierra.
+[^1]: El autor recomienda RStudio como la manera más conveniente de ejecutar código R y cree que este IDE es una de las principales razones tras la popularidad de R. En consecuencia, esta guía fue escrita originalmente usando RStudio v1.1.453 en macOS High Sierra.
 
 
 ### Operadores
@@ -417,7 +417,11 @@ Como observación final, aunque no existe una guía de estilo oficial para el le
  
 ## Instalando R y otras dependencias
 
-Asumiendo una máquina corriendo Ubuntu 18.04 Bionic Beaver como sistema operativo, un usuario con acceso *sudo* puede instalar el lenguaje de programación R y RStudio siguiendo estos pasos:
+Tanto R como RStudio están disponibles para los sistemas operativos más populares, incluyendo Windows, MacOS y varias distribuciones de Linux. Ya que no es posible mostrar instrucciones por cada sistema existente, en esta sección mostraremos instrucciones para Windows y Ubuntu 18.04 Bionic Beaver. Usuarios de otros sistemas operativos podrán encontrar instrucciones en los sitios oficiales de [R](https://www.r-project.org/) y [RStudio](https://www.rstudio.com/products/rstudio/).
+
+Instalar R y RStudio en Windows es fácil: descarga y ejecuta los instaladores correspondientes desde [aquí](https://cloud.r-project.org/bin/windows/base/) y [aquí](https://www.rstudio.com/products/rstudio/). Recuerda instalar R primero.
+
+En Ubuntu 18.04 Bionic Beaver el proceso contiene más pasos:
 
 1. Actualiza los paquetes del sistema para asegurar que las dependencias ya instaladas estén actualizadas. 
 ```{bash, eval=FALSE}
@@ -436,21 +440,23 @@ sudo apt install gdebi-core
 ```{bash, eval=FALSE}
 sudo gdebi rstudio-xenial-1.1.456-amd64.deb
 ```
-6. RStudio debería estar disponible para su ejecución mediante el comando *rstudio* o clickeando su ícono en el menú de aplicaciones.
+RStudio debería estar disponible para su ejecución mediante el comando *rstudio* o clickeando su ícono en el menú de aplicaciones.
 
 Además de RStudio Desktop, el cual puede instalarse siguiendo los pasos anteriores, RStudio también se encuentra disponible en una versión de acceso remoto. RStudio Server es una aplicación que puede instalarse en un servidor web, ofreciendo de esta manero las mismas funcionalidades que la versión de escritorio a través de un navegador web. Para saber más acerca de esta alternativa y como instalarla, favor referirse a la [documentación oficial](https://www.rstudio.com/products/rstudio/download-server/).
 
-El proyecto a partir del cual se generó este documento usa [Packrat](https://rstudio.github.io/packrat/) para la gestión de librerías de las cuales depende. Esto asegura la portabilidad del software (al importar el proyecto, se instalará la versión apropiada para el sistema operativo de cada paquete) y la reproducibilidad del análisis. De este modo, asumiendo que Git está instalado en el sistema, puedes bajar y jugar con este notebook de forma fácil:
+El proyecto a partir del cual se generó este documento usa [Packrat](https://rstudio.github.io/packrat/) para la gestión de librerías de las cuales depende. Esto asegura la portabilidad del software (al importar el proyecto, se instalará la versión apropiada para el sistema operativo de cada paquete) y la reproducibilidad del análisis. Así, puedes bajar y jugar con este notebook de forma fácil:
 
-
-1. Clona el proyecto
+1. Descarga el proyecto en formato ZIP [aquí](https://github.com/open-contracting/ocds-r-manual/archive/master.zip) y extráelo en un directorio de tu preferencia o, si así lo prefieres, usa Git para clonar el proyecto:
 ```{bash, eval=FALSE}
 git clone https://github.com/open-contracting/ocds-r-manual.git
 ```
-2. Abre el proyecto con  RStudio usando la opción del menú **File -> Open Project...**
+Si usas Ubuntu 18.04, instala las siguientes librerías:
+```{bash notebooklibs, eval=FALSE}
+sudo apt-get install libxml2-dev curl libcurl4-openssl-dev libssl-dev libpq-dev g++
+```
+2. Abre RStudio y busca el proyecto usando la opción del menú **File -> Open Project...**
 
-
-También usaremos una base de datos Postgres para nuestro análisis, por lo cual debemos instalar Postgres en caso de que no se encuentre en nuestro sistema. Podemos hacer esto ejecutando:
+También usaremos una base de datos Postgres para nuestro análisis, por lo cual debemos instalar Postgres en caso de que no se encuentre en nuestro sistema. En Ubuntu 18.04, podemos hacer esto ejecutando:
 
 ```{bash, eval=FALSE}
 sudo apt install postgresql postgresql-contrib
@@ -458,16 +464,21 @@ sudo apt install postgresql postgresql-contrib
 
 El último comando instala el motor de bases de datos Postgres y crea un usuario *postgres* a ser utilizado como cuenta por defecto para el acceso a bases de datos.
 
+En Windows, puedes descargar el instalador desde el [sitio oficial de descargas](https://www.postgresql.org/download/windows/). El instalador incluye pgAdmin, una herramienta gráfica útil para la administración de bases de datos en PostgreSQL.
+
 # Adquisición de datos
 
 Esta sección se enfoca en la lectura de datos a partir de diversas fuentes, el cual representa el primer paso para el proceso de análisis. Se cargarán datos de los cuatro países que conciernen a este documento, usándolos como ejemplos de distintos métodos de adquisición de datos:
 
-
 * Los datos de Uruguay se leerán usando su API web pública. 
 * Los datos de Paraguay se leerán de archivos JSON previamente descargados. 
-* Los datos de México y Colombia se leerán de columnas JSONB de una base de datos Postgres. Como en este caso se tratará con volúmenes más grandes de datos, se usará como ejemplo de como procesar big data con R
-usando JSON streams y procesamiento paralelo.
+* Los datos de México y Colombia se leerán de columnas JSONB de una base de datos Postgres. Como en este caso se tratará con volúmenes más grandes de datos, se usará como ejemplo de como procesar big data con R usando JSON streams y procesamiento paralelo.
 
+En los casos de Paraguay, México y Colombia usaremos datos preparados para su uso específico en el presente manual. Es importante notar que estos datos pueden no estar actualizados; por lo tanto, si el lector está interesado en analizar datos de estos países debe dirigirse a los publicadores originales:
+
+* Paraguay: [DNCP](https://www.contrataciones.gov.py/datos/api/v2/#!/ocds) y [Ministerio de Hacienda](https://datos.hacienda.gov.py/odmh-api-v1/api-docs/)
+* México: [Administración Pública Federal](https://datos.gob.mx/busca/dataset/concentrado-de-contrataciones-abiertas-de-la-apf)
+* Colombia: [Colombia Compra Eficiente](https://www.colombiacompra.gov.co/transparencia/gestion-documental/datos-abiertos)
 
 ## De una API REST
 
@@ -536,7 +547,7 @@ Como se ha mencionado anteriormente, este dataset no es lo suficientemente grand
 
 ## A partir de archivos JSON
 
-También podemos leer registros o entregas a partir de un conjunto de archivos JSON, publicados por uno o más publicadores oficiales asociados a un país. Este es el caso de Paraguay, el siguiente país que añadiremos a nuestro análisis. Los datos abiertos de contrataciones de este país son publicados por la Dirección Nacional de Contrataciones Públicas (DNCP) y por el Ministerio de Hacienda; como comparten ocids, es posible usar los datos publicados por ambos de forma conjunta.
+También podemos leer registros o entregas a partir de un conjunto de archivos JSON, publicados por uno o más publicadores oficiales asociados a un país. Este es el caso de Paraguay, el siguiente país que añadiremos a nuestro análisis. Como hemos dicho anteriormente, los datos abiertos de contrataciones de este país son publicados por la Dirección Nacional de Contrataciones Públicas (DNCP) y por el Ministerio de Hacienda; como comparten ocids, es posible usar los datos publicados por ambos de forma conjunta.
 
 Para continuar con esta guía es necesario obtener una copia de los datasets y almacenarla en el disco duro local, bajo el directorio *./data* (el cual se encuentra vacío luego de clonar el proyecto). Esto es:
 
@@ -621,9 +632,13 @@ Para continuar con esta guía, debes descargar los archivos de backup de estas b
 
 1. Dirígete nuevamente a [https://mega.nz/#F!PCQFzAyY!m54DS0hA3pyKXqergJUBFQ](https://mega.nz/#F!PCQFzAyY!m54DS0hA3pyKXqergJUBFQ).
 2. Descarga los archivos *ocds_colombia.dump* y *ocds_mexico.dump* a tu disco duro local.
-3. Crea las bases de datos ejecutando *sudo -u postgres createdb ocds_colombia* y *sudo -u postgres createdb ocds_mexico* desde una terminal.  
-3. En otra sesión de terminal, desde el directorio donde descargaste los backups, ejecuta *pg_restore -d ocds_colombia ocds_colombia_dump* y *pg_restore -d ocds_mexico ocds_mexico.dump*.
-4. Verifica las bases de datos que acabas de crear. Deben contener múltiples tablas que se crearon durante el proceso de restauración. En particular, la tabla *data* debe contener los registros para nuestro análisis. 
+3. Crea las bases de datos:
+    + En Windows, busca pgAdmin en el menú de Inicio y ábrelo. Ve al panel izquierdo, haz clic en "Servidores", y luego en el ícono de tu instancia de PostgreSQL local. Deberías ver una sección "Bases de Datos", haz clic derecho en ella y selecciona la opción "Crear" -> "Base de Datos...". En el cuadro de diálogo, escribe el nombre de la base de datos como "ocds_colombia" y luego haz clic en "Guardar". Repite los pasos para crear otra base de datos llamada "ocds_mexico".
+    + En Ubuntu 18.04, ejecuta `sudo -u postgres createdb ocds_colombia` y `sudo -u postgres createdb ocds_mexico` desde una terminal.  
+3. Restaura las bases de datos:
+    + En Windows, haz clic derecho en la base de datos "ocds_colombia" y selecciona la opción "Restaurar...". Usa el campo "Nombre del archivo" para encontrar el archivo de respaldo para Colombia (ocds_colombia.dump) y haz clic en "Restaurar". Repite los pasos para la base de datos ocds_mexico.
+    + En Ubuntu 18.04, abre una sessión de terminal y ve al directorio donde descargaste los backups. Ejecuta `pg_restore -d ocds_colombia ocds_colombia_dump` y `pg_restore -d ocds_mexico ocds_mexico.dump`.
+4. Verifica las bases de datos que acabas de crear. Deben contener múltiples tablas que se crearon durante el proceso de restauración. En particular, la tabla `data` debe contener los registros para nuestro análisis. 
 
 La librería que utilizamos (jsonlite) incluye la función *stream_in* para soportar [ndjson](http://ndjson.org), un formato conveniente para almacenar múltiples documentos JSON en un único archivo. Como nuestros registros están almacenados en una base de datos Postgres, debemos escribir una funcionalidad similar nosotros mismos. Hagamos exactamente esto en los próximos fragmentos de código:
 
