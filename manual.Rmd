@@ -56,7 +56,7 @@ By requiring data-sharing in a structured, re-usable and machine readable form, 
 
 The data standard, designed and developed through an open process, allows governments and cities around the world to share their contracting data, enabling greater transparency in public contracting, and supporting accessible and in-depth analysis of the efficiency, effectiveness, fairness, and integrity of public contracting systems. Additionally, the help desk team, staffed by Open Data Services Co-operative, is available to assist prospective users in their journey towards adoption of the standard.
 
-The intention of this section is to introduce the reader to the standard, the use cases it was designed for and the basic concepts needed to apply it. Most of the content was taken from the official documentation of the standard; for a more thorough introductory walktrough, please refer to the [getting started guide](http://standard.open-contracting.org/latest/en/getting_started/).
+The intention of this section is to introduce the reader to the standard, the use cases it was designed for and the basic concepts needed to apply it. Most of the content was taken from the official documentation of the standard; for a more thorough introductory walktrough, please refer to the [getting started guide](https://standard.open-contracting.org/latest/en/getting_started/).
 
 ### Users and use cases
 
@@ -93,7 +93,7 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE,
 knitr::include_graphics("procurement-stages.png")
 ```
 
-For identification purposes, all contracting processes are assigned a unique Open Contracting ID (ocid), which can be used to join data from different stages. In order to avoid ocid clashes between publishers, a publisher can prepend a prefix to locally generated identifiers. Publishers are encouraged to register their prefix [here](http://standard.open-contracting.org/latest/en/implementation/registration/).
+For identification purposes, all contracting processes are assigned a unique Open Contracting ID (ocid), which can be used to join data from different stages. In order to avoid ocid clashes between publishers, a publisher can prepend a prefix to locally generated identifiers. Publishers are encouraged to register their prefix [here](https://standard.open-contracting.org/latest/en/implementation/registration/).
 
 
 
@@ -248,7 +248,7 @@ Each section may contain several **fields** specified in the standard, which are
 
 ### Extensions and codelists
 
-In addition to regular fields, the OCDS schema defines some fields that can only be used in certain sections, e.g. *titles* and *descriptions* of tenders, awards and contracts. In some cases, publishers may require fields that are not provided by the core schema; an **extension** allows defining new fields that can be used in these cases. A list of available extensions is available [here](http://standard.open-contracting.org/latest/en/extensions); if no existing extension addresses a publisher's needs, the publisher is encouraged to collaborate on the creation of a new community extension.
+In addition to regular fields, the OCDS schema defines some fields that can only be used in certain sections, e.g. *titles* and *descriptions* of tenders, awards and contracts. In some cases, publishers may require fields that are not provided by the core schema; an **extension** allows defining new fields that can be used in these cases. A list of available extensions is available [here](https://standard.open-contracting.org/latest/en/extensions); if no existing extension addresses a publisher's needs, the publisher is encouraged to collaborate on the creation of a new community extension.
 
 Another concept worth mentioning is that of codelists. Codelists are sets of case sensitive  strings with associated labels, available in each language OCDS has been translated into. Publishers should use codelist values whenever possible to map their existing classification systems; if needed, detail fields can be used to provide more detailed classification information. There are two types of codelists:
 
@@ -257,7 +257,7 @@ Another concept worth mentioning is that of codelists. Codelists are sets of cas
 
 
 
-The Open Contracting Data Standard is maintained using [JSON Schema](http://json-schema.org). In this section we have introduced and described the main sections and common objects used in the schema, providing JSON snippets as examples of these basic building blocks. If you are interested in the full JSON schema reference, please refer to the [official documentation](http://standard.open-contracting.org/latest/en/schema/).
+The Open Contracting Data Standard is maintained using [JSON Schema](http://json-schema.org). In this section we have introduced and described the main sections and common objects used in the schema, providing JSON snippets as examples of these basic building blocks. If you are interested in the full JSON schema reference, please refer to the [official documentation](https://standard.open-contracting.org/latest/en/schema/).
 
 
 ## An introduction to the R programming language

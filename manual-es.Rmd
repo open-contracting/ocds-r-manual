@@ -58,7 +58,7 @@ Al requerir que los datos se compartan de forma estructurada, reusable y legible
 
 Este estándar de datos, diseñado y desarrollado a través de un proceso abierto, permite a los gobiernos alrededor del mundo compartir sus datos de contrataciones, mejorando así los niveles de transparencia en las compras públicas, y haciendo posible el análisis de los sistemas de contrataciones públicas en términos de eficiencia, efectividad, justicia e integridad. Además, el equipo de help desk está disponible para asistir a potenciales usuarios en el proceso de adopción del estándar.
 
-La intención de esta sección es introducir el estándar al lector, los casos de uso para los cuales fue diseñado y los conceptos básicos necesarios para su aplicación. La mayoría del contenido fue obtenido de la documentación oficial del estándar; para una introducción más detallada del estándar, favor referirse a la [guía para empezar](http://standard.open-contracting.org/latest/en/getting_started/).
+La intención de esta sección es introducir el estándar al lector, los casos de uso para los cuales fue diseñado y los conceptos básicos necesarios para su aplicación. La mayoría del contenido fue obtenido de la documentación oficial del estándar; para una introducción más detallada del estándar, favor referirse a la [guía para empezar](https://standard.open-contracting.org/latest/en/getting_started/).
 
 
 ### Usuarios y casos de uso
@@ -97,7 +97,7 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE,
 knitr::include_graphics("procurement-stages-es.png")
 ```
 
-Con fines de identificación, cada proceso de contratación tiene asignado un identificador único de Open Contracting (ocid), el cual puede utilizarse para relacionar datos de diferentes etapas. De modo a evitar solapamiento entre publicadores, un publicador puede incluir un prefijo a todos los identificadores que genera. Se recomienda a los publicadores registrar su prefijo [aquí](http://standard.open-contracting.org/latest/en/implementation/registration/).
+Con fines de identificación, cada proceso de contratación tiene asignado un identificador único de Open Contracting (ocid), el cual puede utilizarse para relacionar datos de diferentes etapas. De modo a evitar solapamiento entre publicadores, un publicador puede incluir un prefijo a todos los identificadores que genera. Se recomienda a los publicadores registrar su prefijo [aquí](https://standard.open-contracting.org/latest/en/implementation/registration/).
 
 
 ### Documentos
@@ -255,7 +255,7 @@ Cada sección puede contener varios **campos** especificados en el estándar, lo
 
 ### Extensiones y listas de códigos
 
-Además de los campos comunes, el esquema OCDS define algunos campos que pueden usarse solamente en secciones específicas, por ejemplo *titulos* y *descripciones* de licitaciones, adjudicaciones y contratos. En algunos casos, los publicadores pueden requerir campos que no se proporcionan en el esquema central de OCDS; una **extensión** permite definir nuevos campos que pueden usarse en estos casos. Una lista de extensiones disponibles se encuentra publicada [aquí](http://standard.open-contracting.org/latest/en/extensions); en caso de que no exista una extensión que se ajuste a las necesidades del publicador, se anima al mismo a colaborar en la creación de una nueva extensión comunitaria.
+Además de los campos comunes, el esquema OCDS define algunos campos que pueden usarse solamente en secciones específicas, por ejemplo *titulos* y *descripciones* de licitaciones, adjudicaciones y contratos. En algunos casos, los publicadores pueden requerir campos que no se proporcionan en el esquema central de OCDS; una **extensión** permite definir nuevos campos que pueden usarse en estos casos. Una lista de extensiones disponibles se encuentra publicada [aquí](https://standard.open-contracting.org/latest/en/extensions); en caso de que no exista una extensión que se ajuste a las necesidades del publicador, se anima al mismo a colaborar en la creación de una nueva extensión comunitaria.
 
 Otro concepto que vale la pena mencionar son las listas de códigos. Las listas de códigos son colecciones de cadenas con distinción entre mayúsculas y minúsculas con etiquetas asociadas, disponibles en cada idioma al que se ha traducido OCDS. Los publicadores deben utilizar valores de las listas de códigos cuando sea posible para mapear sus sistemas de clasificación actual; en caso de ser necesario, los campos de detalle pueden utilizarse para proveer información de clasificación más detallada. Existen dos tipos de listas de códigos:
 
@@ -264,7 +264,7 @@ Otro concepto que vale la pena mencionar son las listas de códigos. Las listas 
 * **Listas de códigos abiertas** son conjuntos de valores recomendados. Si un campo se asocia a una lista de códigos abierta, debe aceptar valores de la lista pero puede aceptar también otros valores.
 
 
-El estándar de datos Open Contracting se mantiene usando [JSON Schema](http://json-schema.org). En esta sección introdujimos y describimos sus secciones principales y elementos comunes del esquema, proveyendo documentos JSON como ejemplos de estos bloques básicos. Para acceder a una referencia del esquema JSON completo, el lector puede dirigirse a la [documentación oficial](http://standard.open-contracting.org/latest/en/schema/).
+El estándar de datos Open Contracting se mantiene usando [JSON Schema](http://json-schema.org). En esta sección introdujimos y describimos sus secciones principales y elementos comunes del esquema, proveyendo documentos JSON como ejemplos de estos bloques básicos. Para acceder a una referencia del esquema JSON completo, el lector puede dirigirse a la [documentación oficial](https://standard.open-contracting.org/latest/en/schema/).
 
 
 ## Una introducción al lenguaje de programación R
